@@ -111,4 +111,3 @@ export default async function UserProfilePage({ params }: PageProps) {
       </main>
     );
   }
-}
