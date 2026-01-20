@@ -121,23 +121,6 @@ export async function POST(request: NextRequest) {
 
     const { tmdbId, rating, title, body, spoiler } = validation.data;
 
-    // Check if user already has a review for this movie
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        tmdbId_userId: {
-          tmdbId,
-          userId: session.user.id,
-        },
-      },
-    });
-
-    if (existingReview) {
-      return NextResponse.json(
-        { error: "You have already reviewed this movie" },
-        { status: 409 }
-      );
-    }
-
     // Create review
     const review = await prisma.review.create({
       data: {

@@ -127,7 +127,6 @@ model Review {
   comments     Comment[]
   likes        ReviewLike[]
 
-  @@unique([tmdbId, userId])
   @@index([tmdbId])
   @@index([userId])
   @@index([createdAt])
