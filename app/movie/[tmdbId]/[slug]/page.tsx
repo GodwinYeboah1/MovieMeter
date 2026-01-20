@@ -8,7 +8,7 @@ import { TrailerModal } from "@/components/movie/TrailerModal";
 import { ActorMoviesModal } from "@/components/movie/ActorMoviesModal";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Star, Clock, Calendar, Plus, Share2, TrendingUp } from "lucide-react";
+import { Star, Clock, Calendar, Plus, Share2, TrendingUp, MessageSquare, Users } from "lucide-react";
 
 interface PageProps {
   params: { tmdbId: string; slug: string };
@@ -262,16 +262,31 @@ export default async function MovieDetailPage({ params }: PageProps) {
 
             {/* Stats if any */}
             {stats && stats.ratingCount > 0 && (
-              <section className="bg-primary/5 rounded-2xl p-8 border border-primary/10">
-                <h3 className="text-xl font-bold italic uppercase tracking-tighter text-primary mb-6">Stats</h3>
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="bg-background p-4 rounded-xl border border-white/5">
-                    <div className="text-2xl font-black text-primary">{stats.reviewCount}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Reviews</div>
+              <section className="bg-gradient-to-br from-primary/10 to-transparent rounded-2xl p-8 border border-primary/10">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="h-8 w-1 bg-primary rounded-full"></div>
+                  <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">Stats</h3>
+                </div>
+                
+                <div className="grid gap-4">
+                  <div className="bg-background/40 backdrop-blur-sm p-6 rounded-2xl border border-white/5 flex items-center gap-5 group hover:border-primary/30 transition-all duration-300">
+                    <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <MessageSquare className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-black text-white leading-none mb-1">{stats.reviewCount}</div>
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Total Reviews</div>
+                    </div>
                   </div>
-                  <div className="bg-background p-4 rounded-xl border border-white/5">
-                    <div className="text-2xl font-black text-primary">{stats.ratingCount}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Ratings</div>
+
+                  <div className="bg-background/40 backdrop-blur-sm p-6 rounded-2xl border border-white/5 flex items-center gap-5 group hover:border-primary/30 transition-all duration-300">
+                    <div className="h-12 w-12 rounded-xl bg-yellow-500/20 flex items-center justify-center text-yellow-500 group-hover:scale-110 transition-transform">
+                      <Users className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-black text-white leading-none mb-1">{stats.ratingCount}</div>
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Total Ratings</div>
+                    </div>
                   </div>
                 </div>
               </section>

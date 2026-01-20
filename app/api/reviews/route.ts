@@ -15,6 +15,7 @@ const createReviewSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession();
     const searchParams = request.nextUrl.searchParams;
     const tmdbId = parseInt(searchParams.get("tmdbId") || "0");
     const page = parseInt(searchParams.get("page") || "1");
@@ -54,6 +55,30 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
+    // Check which reviews the current user has liked
+    const userId = session?.user?.id;
+    let userLikedReviewIds: string[] = [];
+    
+    if (userId && reviews.length > 0) {
+      const reviewIds = reviews.map(r => r.id);
+      const userLikes = await prisma.reviewLike.findMany({
+        where: {
+          reviewId: { in: reviewIds },
+          userId,
+        },
+        select: {
+          reviewId: true,
+        },
+      });
+      userLikedReviewIds = userLikes.map(like => like.reviewId);
+    }
+
+    // Add liked status to each review
+    const reviewsWithLikedStatus = reviews.map(review => ({
+      ...review,
+      liked: userLikedReviewIds.includes(review.id),
+    }));
+
     const total = await prisma.review.count({
       where: {
         tmdbId,
@@ -62,7 +87,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
-      reviews,
+      reviews: reviewsWithLikedStatus,
       pagination: {
         page,
         limit,

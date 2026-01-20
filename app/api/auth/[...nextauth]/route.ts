@@ -72,19 +72,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub || "";
         session.user.email = token.email || "";
         session.user.name = token.name || "";
+        session.user.image = token.image || null;
         session.user.role = token.role || "USER";
         session.user.isBanned = token.isBanned || false;
       }
       return session;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user, trigger, session }: any) {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.image = user.image;
         token.role = user.role;
         token.isBanned = user.isBanned;
       }
+      
+      if (trigger === "update" && session) {
+        token.name = session.name;
+        token.image = session.image;
+      }
+
       return token;
     },
   },
