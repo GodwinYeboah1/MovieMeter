@@ -1,13 +1,14 @@
-import { tmdb } from "@/lib/providers/tmdb";
+import { tmdb, TMDBVideo } from "@/lib/providers/tmdb";
 import { prisma } from "@/lib/db/prisma";
 import { generateMovieSlug } from "@/lib/utils/slug";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ReviewList } from "@/components/review/ReviewList";
+import { TrailerModal } from "@/components/movie/TrailerModal";
+import { ActorMoviesModal } from "@/components/movie/ActorMoviesModal";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Star, Clock, Calendar, Play, Plus, Share2, TrendingUp } from "lucide-react";
-import Link from "next/link";
+import { Star, Clock, Calendar, Plus, Share2, TrendingUp } from "lucide-react";
 
 interface PageProps {
   params: { tmdbId: string; slug: string };
@@ -56,6 +57,19 @@ export default async function MovieDetailPage({ params }: PageProps) {
 
   const cast = movie.credits?.cast.slice(0, 8) || [];
   const directors = movie.credits?.crew.filter(person => person.job === 'Director') || [];
+  const videoResponse = await tmdb.getMovieVideos(tmdbId).catch(() => null);
+  const videoResults: TMDBVideo[] = videoResponse?.results || [];
+  const trailer =
+    videoResults.find(
+      (video) =>
+        video.site === "YouTube" &&
+        video.type === "Trailer" &&
+        video.official
+    ) ||
+    videoResults.find(
+      (video) => video.site === "YouTube" && video.type === "Trailer"
+    ) ||
+    videoResults[0];
 
   return (
     <div className="space-y-12">
@@ -132,9 +146,7 @@ export default async function MovieDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 pt-4">
-                  <Button size="lg" className="rounded-full h-12 px-8 font-bold text-lg">
-                    <Play className="mr-2 h-5 w-5 fill-current" /> Watch Trailer
-                  </Button>
+                  <TrailerModal trailerKey={trailer?.key} movieTitle={movie.title} />
                   <Button size="lg" variant="secondary" className="rounded-full h-12 px-8 font-bold text-lg bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border-none">
                     <Plus className="mr-2 h-5 w-5" /> Add to List
                   </Button>
@@ -165,24 +177,31 @@ export default async function MovieDetailPage({ params }: PageProps) {
                 <h2 className="text-2xl font-bold italic uppercase tracking-tighter border-l-4 border-primary pl-4 mb-8">Top Cast</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                   {cast.map((actor) => (
-                    <div key={actor.id} className="group cursor-pointer">
-                      <div className="relative aspect-square rounded-full overflow-hidden mb-3 border-2 border-transparent transition-all duration-300 group-hover:border-primary">
-                        {actor.profile_path ? (
-                          <Image
-                            src={tmdb.getImageUrl(actor.profile_path, 'w300') || ''}
-                            alt={actor.name}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center text-xs text-gray-500">No Img</div>
-                        )}
+                    <ActorMoviesModal 
+                      key={actor.id} 
+                      actorId={actor.id} 
+                      actorName={actor.name}
+                      actorImage={actor.profile_path}
+                    >
+                      <div className="group cursor-pointer">
+                        <div className="relative aspect-square rounded-full overflow-hidden mb-3 border-2 border-transparent transition-all duration-300 group-hover:border-primary">
+                          {actor.profile_path ? (
+                            <Image
+                              src={tmdb.getImageUrl(actor.profile_path, 'w300') || ''}
+                              alt={actor.name}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center text-xs text-gray-500">No Img</div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-sm md:text-base group-hover:text-primary transition-colors">{actor.name}</div>
+                          <div className="text-xs text-gray-500 line-clamp-1">{actor.character}</div>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <div className="font-bold text-sm md:text-base group-hover:text-primary transition-colors">{actor.name}</div>
-                        <div className="text-xs text-gray-500 line-clamp-1">{actor.character}</div>
-                      </div>
-                    </div>
+                    </ActorMoviesModal>
                   ))}
                 </div>
               </section>

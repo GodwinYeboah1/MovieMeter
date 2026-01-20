@@ -37,6 +37,19 @@ export interface TMDBSearchResult {
   total_results: number;
 }
 
+export interface TMDBVideo {
+  id: string;
+  iso_639_1: string;
+  iso_3166_1: string;
+  key: string;
+  name: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+  published_at: string;
+}
+
 class TMDBProvider {
   private apiKey: string;
   private baseUrl: string;
@@ -119,6 +132,12 @@ class TMDBProvider {
     );
   }
 
+  async getMovieVideos(tmdbId: number) {
+    return this.fetchWithRetry<{ id: number; results: TMDBVideo[] }>(
+      `/movie/${tmdbId}/videos`
+    );
+  }
+
   async getMovieCredits(tmdbId: number) {
     return this.fetchWithRetry(`/movie/${tmdbId}/credits`);
   }
@@ -127,6 +146,23 @@ class TMDBProvider {
     return this.fetchWithRetry<TMDBSearchResult>(
       `/movie/${tmdbId}/similar?page=${page}`
     );
+  }
+
+  async getPersonMovieCredits(personId: number) {
+    return this.fetchWithRetry<{ cast: TMDBMovie[] }>(
+      `/person/${personId}/movie_credits`
+    );
+  }
+
+  async getPersonDetails(personId: number) {
+    return this.fetchWithRetry<{
+      id: number;
+      name: string;
+      biography: string;
+      profile_path: string | null;
+      place_of_birth: string | null;
+      birthday: string | null;
+    }>(`/person/${personId}`);
   }
 
   getImageUrl(path: string | null, size: 'w200' | 'w300' | 'w500' | 'w780' | 'original' = 'w500'): string | null {
