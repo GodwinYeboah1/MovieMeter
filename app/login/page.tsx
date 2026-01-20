@@ -17,18 +17,33 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      const result = await signIn("email", {
+      const result = await signIn("email-login", {
         email,
         redirect: false,
+        callbackUrl: "/",
       });
 
       if (result?.error) {
-        setMessage({ text: "Failed to send email. Please try again.", type: 'error' });
-      } else {
-        setMessage({ text: "Magic link sent! Check your inbox.", type: 'success' });
+        setMessage({ 
+          text: "Invalid email format. Please enter a valid email address.", 
+          type: 'error' 
+        });
+      } else if (result?.ok) {
+        setMessage({ 
+          text: "Welcome! Redirecting you to the homepage...", 
+          type: 'success' 
+        });
+        // Redirect to home page after successful login
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
       }
     } catch (error) {
-      setMessage({ text: "An error occurred. Please try again.", type: 'error' });
+      console.error('Login error:', error);
+      setMessage({ 
+        text: "An unexpected error occurred. Please try again.", 
+        type: 'error' 
+      });
     } finally {
       setLoading(false);
     }
@@ -98,7 +113,7 @@ export default function LoginPage() {
 
           <div className="mt-10 text-center space-y-4">
             <p className="text-gray-600 text-xs uppercase tracking-[0.2em] font-bold">
-              No password needed. We'll send a magic link.
+              No password needed. Just enter your email to join.
             </p>
             <div className="pt-4 flex items-center justify-center gap-6">
               <Link href="/" className="text-gray-500 hover:text-white transition-colors text-sm font-bold underline decoration-primary/30 underline-offset-4">

@@ -9,7 +9,7 @@ A production-ready movie review web application built with Next.js 14, TypeScrip
 - ⭐ **Reviews**: Rate and review movies (1-10 scale)
 - 💬 **Comments**: Discuss reviews with threaded comments
 - 🛡️ **Moderation**: Report system and admin moderation tools
-- 🔐 **Authentication**: Email magic link authentication
+- 🔐 **Authentication**: Simple email-based authentication (no password required)
 - 📱 **Responsive**: Mobile-first design with Tailwind CSS
 - 🚀 **SEO Optimized**: Dynamic metadata, JSON-LD, and canonical URLs
 
@@ -29,7 +29,6 @@ A production-ready movie review web application built with Next.js 14, TypeScrip
 - Node.js 20.12+ (or compatible version)
 - PostgreSQL database
 - TMDB API key ([Get one here](https://www.themoviedb.org/settings/api))
-- Email server credentials (for magic link authentication)
 
 ## Setup
 
@@ -48,7 +47,7 @@ Copy `.env.example` to `.env.local` and fill in your values:
 cp .env.example .env.local
 ```
 
-Required environment variables:
+**Required environment variables:**
 
 ```env
 # Database
@@ -58,15 +57,13 @@ DATABASE_URL="postgresql://user:password@localhost:5432/moviemeter?schema=public
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key-here" # Generate with: openssl rand -base64 32
 
-# Email Provider (for magic link)
-EMAIL_SERVER_HOST="smtp.gmail.com"
-EMAIL_SERVER_PORT=587
-EMAIL_SERVER_USER="your-email@gmail.com"
-EMAIL_SERVER_PASSWORD="your-app-password"
-EMAIL_FROM="noreply@moviemeter.com"
-
 # TMDB API
 TMDB_API_KEY="your-tmdb-api-key-here"
+```
+
+**Verify your configuration:**
+```bash
+npm run check-env
 ```
 
 ### 3. Database Setup
