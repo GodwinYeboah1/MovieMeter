@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User as UserIcon, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, User as UserIcon, Settings, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -46,25 +46,34 @@ export function Navbar() {
                 <div className="relative">
                   <button 
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-3 p-1 rounded-full hover:bg-white/5 transition-all group"
+                    className="flex items-center gap-3 px-3 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all group"
                   >
-                    <div className="relative h-9 w-9 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary/50 transition-all">
-                      {session.user.image ? (
-                        <Image
-                          src={session.user.image}
-                          alt={session.user.name || "User"}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary">
-                          <UserIcon className="h-5 w-5" />
-                        </div>
-                      )}
+                    {/* Avatar with gradient ring */}
+                    <div className="relative">
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-sm" />
+                      <div className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/50 transition-all">
+                        {session.user.image ? (
+                          <Image
+                            src={session.user.image}
+                            alt={session.user.name || "User"}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center text-primary font-bold text-sm">
+                            {session.user.name?.[0]?.toUpperCase() || <UserIcon className="h-4 w-4" />}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-sm font-bold pr-2 hidden lg:inline-block">
-                      {session.user.name || "User"}
-                    </span>
+                    
+                    {/* Name and dropdown indicator */}
+                    <div className="hidden lg:flex items-center gap-2">
+                      <span className="text-sm font-bold text-white/90 group-hover:text-white transition-colors">
+                        {session.user.name || "User"}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
+                    </div>
                   </button>
 
                   {showUserMenu && (
@@ -73,53 +82,84 @@ export function Navbar() {
                         className="fixed inset-0 z-10" 
                         onClick={() => setShowUserMenu(false)}
                       />
-                      <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#1a1a1a] border border-white/10 shadow-2xl p-2 z-20 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-4 py-3 border-b border-white/5 mb-2">
-                          <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1">Signed in as</p>
-                          <p className="text-sm font-bold text-white truncate">{session.user.email}</p>
+                      <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-[#0d0d0d] border border-white/10 shadow-2xl shadow-black/50 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                        {/* User Header */}
+                        <div className="p-4 bg-gradient-to-br from-primary/10 via-transparent to-blue-500/10 border-b border-white/5">
+                          <div className="flex items-center gap-3">
+                            <div className="relative h-12 w-12 rounded-full overflow-hidden ring-2 ring-primary/30">
+                              {session.user.image ? (
+                                <Image
+                                  src={session.user.image}
+                                  alt={session.user.name || "User"}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center text-primary font-bold">
+                                  {session.user.name?.[0]?.toUpperCase() || <UserIcon className="h-5 w-5" />}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-white truncate">{session.user.name || "User"}</p>
+                              <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+                            </div>
+                          </div>
                         </div>
                         
-                        <Link 
-                          href={`/user/${session.user.id}`}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-bold transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <UserIcon className="h-4 w-4 text-primary" />
-                          Profile
-                        </Link>
-                        
-                        <Link 
-                          href="/settings"
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-bold transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <Settings className="h-4 w-4 text-gray-400" />
-                          Settings
-                        </Link>
-
-                        {session.user.role === "ADMIN" && (
+                        {/* Menu Items */}
+                        <div className="p-2">
                           <Link 
-                            href="/admin"
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-bold transition-colors"
+                            href={`/user/${session.user.id}`}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-medium text-gray-300 hover:text-white transition-colors group"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <LayoutDashboard className="h-4 w-4 text-yellow-500" />
-                            Admin Dashboard
+                            <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                              <UserIcon className="h-4 w-4 text-primary" />
+                            </div>
+                            View Profile
                           </Link>
-                        )}
+                          
+                          <Link 
+                            href="/settings"
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-medium text-gray-300 hover:text-white transition-colors group"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <div className="p-1.5 rounded-lg bg-gray-500/10 group-hover:bg-gray-500/20 transition-colors">
+                              <Settings className="h-4 w-4 text-gray-400" />
+                            </div>
+                            Settings
+                          </Link>
 
-                        <div className="h-px bg-white/5 my-2" />
-                        
-                        <button
-                          onClick={() => {
-                            signOut();
-                            setShowUserMenu(false);
-                          }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl hover:bg-red-500/10 text-sm font-bold text-red-500 transition-colors text-left"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Sign Out
-                        </button>
+                          {session.user.role === "ADMIN" && (
+                            <Link 
+                              href="/admin"
+                              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm font-medium text-gray-300 hover:text-white transition-colors group"
+                              onClick={() => setShowUserMenu(false)}
+                            >
+                              <div className="p-1.5 rounded-lg bg-yellow-500/10 group-hover:bg-yellow-500/20 transition-colors">
+                                <LayoutDashboard className="h-4 w-4 text-yellow-500" />
+                              </div>
+                              Admin Dashboard
+                            </Link>
+                          )}
+                        </div>
+
+                        {/* Sign Out */}
+                        <div className="p-2 border-t border-white/5">
+                          <button
+                            onClick={() => {
+                              signOut();
+                              setShowUserMenu(false);
+                            }}
+                            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl hover:bg-red-500/10 text-sm font-medium text-red-400 hover:text-red-300 transition-colors text-left group"
+                          >
+                            <div className="p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
+                              <LogOut className="h-4 w-4" />
+                            </div>
+                            Sign Out
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
@@ -194,25 +234,29 @@ export function Navbar() {
                     href={`/user/${session.user.id}`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-                      <div className="relative h-10 w-10 rounded-full overflow-hidden border border-primary/20">
-                        {session.user.image ? (
-                          <Image
-                            src={session.user.image}
-                            alt={session.user.name || "User"}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {session.user.name?.[0] || session.user.email?.[0]}
-                          </div>
-                        )}
+                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-white/5 to-blue-500/10 border border-white/10 hover:border-white/20 transition-all group">
+                      <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-500 rounded-full opacity-50 blur-sm" />
+                        <div className="relative h-12 w-12 rounded-full overflow-hidden ring-2 ring-white/20">
+                          {session.user.image ? (
+                            <Image
+                              src={session.user.image}
+                              alt={session.user.name || "User"}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center text-primary font-bold text-lg">
+                              {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase()}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold">{session.user.name || "User"}</span>
-                        <span className="text-[10px] text-gray-500 truncate max-w-[150px]">{session.user.email}</span>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="font-bold text-white group-hover:text-primary transition-colors">{session.user.name || "User"}</span>
+                        <span className="text-xs text-gray-500 truncate">{session.user.email}</span>
                       </div>
+                      <ChevronDown className="h-5 w-5 text-gray-500 -rotate-90" />
                     </div>
                   </Link>
                   
