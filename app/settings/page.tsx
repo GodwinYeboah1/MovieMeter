@@ -1,20 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User, Image as ImageIcon, Check, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { User, Check, AlertCircle, ArrowLeft, Loader2, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +30,36 @@ export default function SettingsPage() {
       setImage(session.user.image || "");
     }
   }, [session, status, router]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to upload image");
+      }
+
+      setImage(data.url);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,40 +122,51 @@ export default function SettingsPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-10">
-            {/* Avatar Preview & URL */}
+            {/* Avatar Upload */}
             <div className="space-y-6">
               <label className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Profile Picture</label>
               
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="relative h-24 w-24 rounded-full overflow-hidden bg-primary/10 border-2 border-primary/20 flex-shrink-0 flex items-center justify-center">
-                  {image ? (
+              <div className="flex flex-col items-center gap-4">
+                {/* Clickable Avatar with Plus Icon */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="relative h-28 w-28 rounded-full overflow-hidden bg-primary/10 border-2 border-primary/20 flex-shrink-0 flex items-center justify-center group cursor-pointer transition-all hover:border-primary/40 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? (
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  ) : image ? (
                     <Image
                       src={image}
                       alt="Avatar Preview"
                       fill
                       className="object-cover"
-                      onError={() => setError("Invalid image URL")}
                     />
                   ) : (
-                    <User className="h-10 w-10 text-primary/40" />
+                    <User className="h-12 w-12 text-primary/40" />
                   )}
-                </div>
-                
-                <div className="flex-grow w-full space-y-2">
-                  <div className="relative">
-                    <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <input
-                      type="url"
-                      value={image}
-                      onChange={(e) => setImage(e.target.value)}
-                      placeholder="Paste an image URL (e.g. from Unsplash, Gravatar)"
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
-                    />
+                  
+                  {/* Plus Icon Overlay */}
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-primary rounded-full p-2">
+                      <Plus className="h-5 w-5 text-white" />
+                    </div>
                   </div>
-                  <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest px-2">
-                    Tip: Use a URL from Gravatar, Unsplash, or any image hosting service.
-                  </p>
-                </div>
+                </button>
+                
+                {/* Hidden File Input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                
+                <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center">
+                  Click to upload a new photo
+                </p>
               </div>
             </div>
 

@@ -19,10 +19,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Optional: Add URL validation for image
-    if (image && !image.startsWith("http")) {
+    // Validate image path - allow URLs and local uploads
+    if (image && !image.startsWith("http") && !image.startsWith("/uploads/")) {
       return NextResponse.json(
-        { error: "Avatar must be a valid URL" },
+        { error: "Invalid avatar image" },
         { status: 400 }
       );
     }
